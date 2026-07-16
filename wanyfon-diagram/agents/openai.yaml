@@ -1,0 +1,4 @@
+interface:
+  display_name: "Wanyfon Diagram"
+  short_description: "Personal draw.io diagrams with a clean technical style"
+  default_prompt: "Use $wanyfon-diagram to create a clean draw.io architecture diagram."
