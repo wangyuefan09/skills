@@ -1,57 +1,68 @@
-# Export And File Rules
+# Draw.io 导出与文件规范
 
-Use this reference when saving, validating, or exporting diagram files.
+本文件定义 wanyfon-diagram 的导出命令、命名约定和交付规则。只有在需要落文件、导出或打开图表时再读取。
 
-## File Naming
+## 标准流程
 
-Use kebab-case names:
+1. 先生成 `.drawio`
+2. 检测本机是否存在 `drawio` CLI
+3. 若用户要求导出，则执行对应导出命令
+4. 返回 `.drawio` 路径和导出文件路径
+5. 若导出失败，不删除 `.drawio`
 
-- `order-service-architecture.drawio`
-- `rag-ingestion-pipeline.drawio`
-- `payment-request-flow.drawio`
+## 检测命令
 
-If the user gives a destination path, use it. Otherwise create a `diagrams/` directory in the current project and write the `.drawio` file there.
+```bash
+# macOS/Linux
+which drawio
 
-Do not overwrite an existing file unless the user asked to update it. If a same-name file exists, create a numbered variant such as `order-service-architecture-v2.drawio`.
-
-## Validation
-
-After writing a `.drawio` file:
-
-1. Parse it as XML.
-2. Check there is one `<mxfile>` root.
-3. Check at least one `<diagram>` exists.
-4. Check each edge with `source` and `target` points to an existing cell id.
-5. Check visible vertex cells have `mxGeometry` with `x`, `y`, `width`, and `height`.
-
-PowerShell XML parse check:
-
-```powershell
-[xml]$doc = Get-Content -Raw '.\diagrams\example.drawio'
-$doc.mxfile.diagram.Count
+# Windows
+where drawio
 ```
 
-## Exporting Images
+## 导出命令
 
-Only export PNG/SVG/PDF if:
+```bash
+# PNG 导出（嵌入 XML）
+drawio -x -f png -e -b 10 -o output.drawio.png input.drawio
 
-- the user explicitly asks for an image/PDF, or
-- a diagrams.net CLI / draw.io CLI is already available locally.
+# SVG 导出（嵌入 XML）
+drawio -x -f svg -e -o output.drawio.svg input.drawio
 
-If no CLI is available, still provide the `.drawio` file and state that image export was not run.
-
-Do not rely on remote images or external icon URLs. Keep the diagram self-contained.
-
-## Final Response
-
-Keep the final response short:
-
-- name the created or updated file
-- mention validation status
-- mention any skipped export or assumption
-
-Example:
-
-```text
-已生成 diagrams/order-service-architecture.drawio，并通过 XML 解析检查。没有导出 PNG，因为本地没有可用的 draw.io CLI。
+# PDF 导出（嵌入 XML）
+drawio -x -f pdf -e -o output.drawio.pdf input.drawio
 ```
+
+## 打开文件
+
+```bash
+# macOS
+open filename.drawio
+
+# Linux
+xdg-open filename.drawio
+
+# Windows
+start filename.drawio
+```
+
+## 文件命名规范
+
+| 场景 | 命名格式 | 示例 |
+|-----|---------|------|
+| 流程图 | `{name}-flow.drawio` | `login-flow.drawio` |
+| 架构图 | `{name}-arch.drawio` | `system-arch.drawio` |
+| 时序图 | `{name}-seq.drawio` | `api-call-seq.drawio` |
+| ER 图 | `{name}-er.drawio` | `user-db-er.drawio` |
+| 状态图 | `{name}-state.drawio` | `order-state.drawio` |
+| 思维导图 | `{name}-mind.drawio` | `rag-mind.drawio` |
+| 导出 PNG | `{name}.drawio.png` | `login-flow.drawio.png` |
+| 导出 SVG | `{name}.drawio.svg` | `system-arch.drawio.svg` |
+| 导出 PDF | `{name}.drawio.pdf` | `api-doc.drawio.pdf` |
+
+## 交付规则
+
+- 若用户只说“生成图”，默认交付 `.drawio`
+- 若用户明确说“导出 PNG/SVG/PDF”，同时交付 `.drawio` 和导出文件
+- 若本机没有 `drawio` CLI，要明确说明未自动导出，并把建议命令返回给用户
+- 如果用户要求“只保留导出产物”，删除 `.drawio` 前先确认导出成功

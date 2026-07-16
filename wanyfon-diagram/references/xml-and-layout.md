@@ -1,146 +1,186 @@
-# Draw.io XML And Layout Rules
+# Draw.io XML 与布局规范
 
-Use this reference when creating or editing `.drawio` files.
+本文件包含 XML 结构规则、文本标签约束、节点/连线模板以及不同图表类型的布局建议。只有在需要生成或修改 `.drawio` XML 时再读取。
 
-## XML Structure
+## 文本标签规则
 
-Prefer uncompressed diagrams.net XML so it can be reviewed and patched easily:
+- `mxCell` 的 `value` 中禁止使用 HTML 标签，例如 `&lt;b&gt;`、`&lt;/b&gt;`、`&lt;br&gt;`、`<b>`、`<br>`。
+- 需要换行时使用 XML 换行实体 `&#xa;`，不要使用 `<br>` 或 `&lt;br&gt;`。
+- 需要强调整段文字时使用样式字段（如 `fontStyle=1`）或拆成独立文本节点，不要在 `value` 中嵌入 HTML。
+- 文本节点和图形节点默认使用纯文本渲染，样式中优先设置 `html=0`；除非用户明确要求并确认渲染链支持 HTML，否则不要使用 `html=1`。
+- 生成或修改 `.drawio` 后，必须检查文件中是否残留 HTML 标签，重点搜索 `&lt;`、`<b>`、`<br>`。
+
+## 连线标签规则
+
+- 短连接线不要放长标签；如果两个节点距离较近，连线 `value` 应留空，或只放“是 / 否 / 成功 / 失败”这类 1-2 个词。
+- 分类说明、原因说明、动作说明优先写进目标节点或旁注节点，不要压在连接线上。
+- 连线标签不得覆盖箭头主体。生成或修改流程图后，要重点检查短横线、短竖线、菱形节点左右出口处的标签。
+
+## 基础模板
 
 ```xml
-<mxfile host="app.diagrams.net" agent="Codex" version="24.8.0">
-  <diagram id="page-1" name="Page-1">
-    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="900" math="0" shadow="0">
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" modified="2025-01-01T00:00:00.000Z" agent="wanyfon-diagram" version="24.0.0">
+  <diagram name="Page-1" id="diagram-id">
+    <mxGraphModel dx="1422" dy="794" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="900" math="0" shadow="0" background="#F7F8FA">
       <root>
         <mxCell id="0"/>
         <mxCell id="1" parent="0"/>
+        <!-- 图表内容 -->
       </root>
     </mxGraphModel>
   </diagram>
 </mxfile>
 ```
 
-Every visible cell must have:
+## 标题样式模板
 
-- a deterministic `id`
-- `parent="1"` or a container id
-- `vertex="1"` with `mxGeometry` for nodes, or `edge="1"` with source/target for edges
-
-Escape XML-sensitive characters in labels:
-
-- `&` as `&amp;`
-- `<` as `&lt;`
-- `>` as `&gt;`
-- double quotes inside attributes as `&quot;`
-
-HTML line breaks in labels should use `&lt;br&gt;`.
-
-## Style Snippets
-
-Common node:
-
-```text
-rounded=1;whiteSpace=wrap;html=1;arcSize=8;shadow=0;fontFamily=Inter, PingFang SC, Microsoft YaHei, Arial;fontSize=12;fontColor=#1E2329;strokeWidth=1.5;spacing=10;spacingTop=7;spacingBottom=7;
-```
-
-Container:
-
-```text
-rounded=1;whiteSpace=wrap;html=1;arcSize=6;shadow=0;fillColor=#FFFFFF;strokeColor=#D0D5DD;strokeWidth=1.2;fontFamily=Inter, PingFang SC, Microsoft YaHei, Arial;fontSize=14;fontStyle=1;fontColor=#1F2937;align=left;verticalAlign=top;spacing=12;spacingTop=8;
-```
-
-Default edge:
-
-```text
-edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#667085;strokeWidth=1.4;fontFamily=Inter, PingFang SC, Microsoft YaHei, Arial;fontSize=11;fontColor=#475467;
-```
-
-## Role Styles
-
-Append these role values to the common node style:
-
-```text
-actor: fillColor=#F1F5F9;strokeColor=#64748B;fontColor=#1E293B;
-gateway: fillColor=#E0F2FE;strokeColor=#0284C7;fontColor=#0C4A6E;
-service: fillColor=#ECFDF5;strokeColor=#059669;fontColor=#064E3B;
-worker: fillColor=#FEF3C7;strokeColor=#D97706;fontColor=#78350F;
-database: shape=cylinder3d;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#F5F3FF;strokeColor=#7C3AED;fontColor=#4C1D95;
-cache_queue: fillColor=#FFF7ED;strokeColor=#EA580C;fontColor=#7C2D12;
-external: fillColor=#F8FAFC;strokeColor=#94A3B8;fontColor=#334155;dashed=1;
-warning: fillColor=#FEF2F2;strokeColor=#DC2626;fontColor=#7F1D1D;
-note: fillColor=#FFFFFF;strokeColor=#CBD5E1;fontColor=#334155;
-```
-
-## Layout Patterns
-
-### Architecture / Request Flow
-
-Use left-to-right columns:
-
-| Column | X |
-| --- | ---: |
-| Actor / Client | 60 |
-| Entry / Gateway | 280 |
-| Core Services | 520 |
-| Workers / Async | 760 |
-| Data Stores | 980 |
-| External Systems | 1180 |
-
-Use row spacing of `100-120px`. Align related nodes horizontally where possible.
-
-### Layered System
-
-Use containers as horizontal bands:
-
-- Edge / Client layer
-- API / Integration layer
-- Domain service layer
-- Data / Infrastructure layer
-- External dependency layer
-
-Give each band `28px` horizontal padding and `36px` vertical padding.
-
-### Process Flow
-
-Use top-to-bottom layout:
-
-- Start at `x=120, y=60`
-- Step pitch: `100px`
-- Decision nodes: diamond, `140 x 80`
-- Keep yes/no branches symmetrical where possible
-
-### Data Pipeline
-
-Use left-to-right flow with stage groups:
-
-- Source
-- Ingest
-- Transform
-- Store
-- Serve / Consume
-
-Use dashed orange edges for async/event movement and purple edges for storage reads/writes.
-
-## Geometry Rules
-
-- Keep minimum horizontal gap between nodes: `48px`
-- Keep minimum vertical gap between nodes: `36px`
-- Edge labels should sit near the middle of the edge and not cover nodes.
-- Do not place more than seven primary nodes in one row.
-- If a diagram gets dense, split it into containers or multiple pages.
-- Size containers after placing children, not before.
-
-## Example Node
+图表主标题使用 `fontSize=20`。容器标题使用 `fontSize=14`，节点使用 `fontSize=12`，连线标签使用 `fontSize=11`。
 
 ```xml
-<mxCell id="svc-order" value="&lt;b&gt;订单服务&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 11px&quot;&gt;校验 / 编排 / 写入&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;shadow=0;fontFamily=Inter, PingFang SC, Microsoft YaHei, Arial;fontSize=12;fontColor=#064E3B;strokeWidth=1.5;spacing=10;spacingTop=7;spacingBottom=7;fillColor=#ECFDF5;strokeColor=#059669;" vertex="1" parent="1">
-  <mxGeometry x="520" y="160" width="168" height="64" as="geometry"/>
+<mxCell id="title" value="图表标题" style="text;html=0;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;fontFamily=Inter, PingFang SC, Microsoft YaHei, Arial;fontSize=20;fontStyle=1;fontColor=#111827;" vertex="1" parent="1">
+  <mxGeometry x="520" y="24" width="360" height="40" as="geometry"/>
 </mxCell>
 ```
 
-## Example Edge
+## 节点样式模板
+
+以下模板中的 `{类别填充色}`、`{类别边框色}` 和 `{类别文字色}` 对应视觉规范中的配色表。
+
+### 通用节点模板
 
 ```xml
-<mxCell id="edge-api-order" value="REST" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#667085;strokeWidth=1.4;fontFamily=Inter, PingFang SC, Microsoft YaHei, Arial;fontSize=11;fontColor=#475467;" edge="1" parent="1" source="api-gateway" target="svc-order">
+<mxCell id="node-id" value="节点名称" style="rounded=1;whiteSpace=wrap;html=0;arcSize=8;shadow=0;fillColor={类别填充色};strokeColor={类别边框色};strokeWidth=1.5;fontColor={类别文字色};fontFamily=Inter, PingFang SC, Microsoft YaHei, Arial;fontSize=12;spacing=10;spacingTop=7;spacingBottom=7;" vertex="1" parent="1">
+  <mxGeometry x="100" y="100" width="168" height="64" as="geometry"/>
+</mxCell>
+```
+
+### 常见节点模板
+
+```xml
+<mxCell id="client-id" value="客户端" style="rounded=1;whiteSpace=wrap;html=0;arcSize=8;shadow=0;fillColor=#F1F5F9;strokeColor=#64748B;strokeWidth=1.5;fontColor=#1E293B;fontFamily=Inter, PingFang SC, Microsoft YaHei, Arial;fontSize=12;spacing=10;" vertex="1" parent="1">
+  <mxGeometry x="60" y="100" width="168" height="64" as="geometry"/>
+</mxCell>
+
+<mxCell id="gateway-id" value="API 网关" style="rounded=1;whiteSpace=wrap;html=0;arcSize=8;shadow=0;fillColor=#E0F2FE;strokeColor=#0284C7;strokeWidth=1.5;fontColor=#0C4A6E;fontFamily=Inter, PingFang SC, Microsoft YaHei, Arial;fontSize=12;spacing=10;" vertex="1" parent="1">
+  <mxGeometry x="280" y="96" width="188" height="72" as="geometry"/>
+</mxCell>
+
+<mxCell id="service-id" value="用户服务" style="rounded=1;whiteSpace=wrap;html=0;arcSize=8;shadow=0;fillColor=#ECFDF5;strokeColor=#059669;strokeWidth=1.5;fontColor=#064E3B;fontFamily=Inter, PingFang SC, Microsoft YaHei, Arial;fontSize=12;spacing=10;" vertex="1" parent="1">
+  <mxGeometry x="520" y="100" width="168" height="64" as="geometry"/>
+</mxCell>
+
+<mxCell id="worker-id" value="异步任务" style="rounded=1;whiteSpace=wrap;html=0;arcSize=8;shadow=0;fillColor=#FEF3C7;strokeColor=#D97706;strokeWidth=1.5;fontColor=#78350F;fontFamily=Inter, PingFang SC, Microsoft YaHei, Arial;fontSize=12;spacing=10;" vertex="1" parent="1">
+  <mxGeometry x="760" y="104" width="140" height="56" as="geometry"/>
+</mxCell>
+
+<mxCell id="db-id" value="MySQL 主库" style="shape=cylinder3;whiteSpace=wrap;html=0;boundedLbl=1;fillColor=#F5F3FF;strokeColor=#7C3AED;strokeWidth=1.5;fontColor=#4C1D95;fontFamily=Inter, PingFang SC, Microsoft YaHei, Arial;fontSize=12;shadow=0;" vertex="1" parent="1">
+  <mxGeometry x="980" y="100" width="150" height="64" as="geometry"/>
+</mxCell>
+
+<mxCell id="decision-id" value="条件?" style="rhombus;whiteSpace=wrap;html=0;fillColor=#E0F2FE;strokeColor=#0284C7;strokeWidth=1.5;fontColor=#0C4A6E;fontFamily=Inter, PingFang SC, Microsoft YaHei, Arial;fontSize=12;shadow=0;" vertex="1" parent="1">
+  <mxGeometry x="520" y="220" width="140" height="80" as="geometry"/>
+</mxCell>
+
+<mxCell id="group-id" value="服务层" style="swimlane;whiteSpace=wrap;html=0;rounded=1;arcSize=6;fillColor=#FFFFFF;strokeColor=#D0D5DD;strokeWidth=1.2;fontColor=#1F2937;fontFamily=Inter, PingFang SC, Microsoft YaHei, Arial;fontSize=14;fontStyle=1;align=left;verticalAlign=top;spacing=12;spacingTop=8;shadow=0;" vertex="1" parent="1">
+  <mxGeometry x="480" y="70" width="460" height="250" as="geometry"/>
+</mxCell>
+```
+
+## 连线样式模板
+
+### 默认同步请求
+
+```xml
+<mxCell id="edge-id" value="HTTP" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=0;endArrow=block;endFill=1;strokeWidth=1.4;strokeColor=#475467;labelBackgroundColor=#F7F8FA;fontFamily=Inter, PingFang SC, Microsoft YaHei, Arial;fontSize=11;fontColor=#475467;" edge="1" source="source-id" target="target-id" parent="1">
   <mxGeometry relative="1" as="geometry"/>
 </mxCell>
 ```
+
+### 无标签连线
+
+```xml
+<mxCell id="edge-id" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=0;endArrow=block;endFill=1;strokeWidth=1.4;strokeColor=#667085;" edge="1" source="source-id" target="target-id" parent="1">
+  <mxGeometry relative="1" as="geometry"/>
+</mxCell>
+```
+
+### 异步消息
+
+```xml
+<mxCell id="edge-id" value="异步消息" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=0;endArrow=block;endFill=1;dashed=1;strokeWidth=1.4;strokeColor=#D97706;labelBackgroundColor=#F7F8FA;fontFamily=Inter, PingFang SC, Microsoft YaHei, Arial;fontSize=11;fontColor=#78350F;" edge="1" source="source-id" target="target-id" parent="1">
+  <mxGeometry relative="1" as="geometry"/>
+</mxCell>
+```
+
+## 图表类型布局建议
+
+### 流程图
+
+- 主干流程尽量保持从上到下单向阅读
+- 分支判断使用菱形
+- 决策出口只保留短标签
+- 避免大量连线交叉
+
+### 架构图
+
+- 默认采用从左到右布局
+- 先画层，再画层内节点
+- 相同职责的节点放进同一容器
+- 数据流和控制流使用不同线型或颜色
+- 外部依赖和内部模块视觉上要拉开层次
+
+建议列坐标：
+
+| 列 | X |
+| --- | ---: |
+| 用户 / 客户端 | 60 |
+| 入口 / 网关 | 280 |
+| 核心服务 | 520 |
+| Worker / 异步任务 | 760 |
+| 数据存储 | 980 |
+| 外部系统 | 1180 |
+
+### 时序图
+
+- 参与者从左到右排布
+- 消息箭头按时间顺序自上而下
+- 避免无意义的横向拉宽
+- 激活条只在确有必要时添加
+
+### ER 图
+
+- 实体名清晰、字段简短
+- 主键、外键关系明确
+- 不要把所有字段都塞进一张特别大的 ER 图
+- 复杂系统优先拆分子域
+
+### 状态机图
+
+- 状态是节点，事件是边
+- 避免状态名和边标签都写成长句
+- 开始和结束状态要明显
+
+### 思维导图
+
+- 从中心主题向外发散
+- 第一层分支控制在 4-8 个
+- 同层级节点保持视觉一致
+
+## 几何与密度规则
+
+- 节点最小横向间距为 `48px`
+- 节点最小纵向间距为 `36px`
+- 同一行主节点不超过 7 个
+- 连线标签放在边的中段，不能覆盖节点
+- 复杂图优先使用容器或拆成多个页面
+- 先放置内部节点，再根据节点范围确定容器尺寸
+
+## XML 注意事项
+
+1. 每个 `mxCell` 必须有唯一 `id`
+2. 每条边必须有明确的 `source` 和 `target`
+3. 属性值中的特殊字符必须转义：`&amp;` `&lt;` `&gt;` `&quot;`
+4. XML 注释中不能使用 `--`
+5. 使用网格对齐，建议以 10px 为单位
+6. 需要精细控制连线时，用 `entryX/entryY` 指定入口位置

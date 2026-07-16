@@ -1,4 +1,7 @@
 interface:
-  display_name: "Wanyfon Diagram"
-  short_description: "Personal draw.io diagrams with a clean technical style"
-  default_prompt: "Use $wanyfon-diagram to create a clean draw.io architecture diagram."
+  display_name: "Wanyfon Draw.io 配图专家"
+  short_description: "生成统一个人风格的 draw.io 图表，并支持导出 PNG/SVG/PDF"
+  default_prompt: "使用 $wanyfon-diagram 为这个主题创建 draw.io 图表，并按需要导出。"
+
+policy:
+  allow_implicit_invocation: true
