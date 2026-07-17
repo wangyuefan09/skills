@@ -1,4 +1,4 @@
 interface:
   display_name: "中文文章人性化"
   short_description: "润色中文文章，去除模板化 AI 写作痕迹并保留原意"
-  default_prompt: "使用 $humanizer-article-zh 润色这篇中文文章，去除 AI 写作痕迹并保留原意与语气。"
+  default_prompt: "使用 $article-humanizer-zh 润色这篇中文文章，去除 AI 写作痕迹并保留原意与语气。"
