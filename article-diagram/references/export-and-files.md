@@ -1,12 +1,12 @@
 # Draw.io 导出与文件规范
 
-本文件定义 wanyfon-diagram 的导出命令、命名约定和交付规则。只有在需要落文件、导出或打开图表时再读取。
+本文件定义 article-diagram 的导出命令、命名约定和交付规则。只有在需要落文件、导出或打开图表时再读取。
 
 ## 标准流程
 
 1. 先生成 `.drawio`
 2. 检测本机是否存在 `drawio` CLI
-3. 若用户要求导出，则执行对应导出命令
+3. 若用户要求导出，则执行对应导出命令；文章 PNG 默认使用 2 倍导出
 4. 返回 `.drawio` 路径和导出文件路径
 5. 若导出失败，不删除 `.drawio`
 
@@ -23,14 +23,14 @@ where drawio
 ## 导出命令
 
 ```bash
-# PNG 导出（嵌入 XML）
-drawio -x -f png -e -b 10 -o output.drawio.png input.drawio
+# 公众号正文 PNG：2 倍导出，保留 20px 边距
+drawio -x -f png -s 2 -b 20 -o output.png input.drawio
 
-# SVG 导出（嵌入 XML）
-drawio -x -f svg -e -o output.drawio.svg input.drawio
+# SVG 导出
+drawio -x -f svg -b 20 -o output.svg input.drawio
 
-# PDF 导出（嵌入 XML）
-drawio -x -f pdf -e -o output.drawio.pdf input.drawio
+# PDF 导出
+drawio -x -f pdf -b 20 -o output.pdf input.drawio
 ```
 
 ## 打开文件
@@ -56,9 +56,9 @@ start filename.drawio
 | ER 图 | `{name}-er.drawio` | `user-db-er.drawio` |
 | 状态图 | `{name}-state.drawio` | `order-state.drawio` |
 | 思维导图 | `{name}-mind.drawio` | `rag-mind.drawio` |
-| 导出 PNG | `{name}.drawio.png` | `login-flow.drawio.png` |
-| 导出 SVG | `{name}.drawio.svg` | `system-arch.drawio.svg` |
-| 导出 PDF | `{name}.drawio.pdf` | `api-doc.drawio.pdf` |
+| 导出 PNG | `{name}.png` | `login-flow.png` |
+| 导出 SVG | `{name}.svg` | `system-arch.svg` |
+| 导出 PDF | `{name}.pdf` | `api-doc.pdf` |
 
 ## 交付规则
 
@@ -66,3 +66,4 @@ start filename.drawio
 - 若用户明确说“导出 PNG/SVG/PDF”，同时交付 `.drawio` 和导出文件
 - 若本机没有 `drawio` CLI，要明确说明未自动导出，并把建议命令返回给用户
 - 如果用户要求“只保留导出产物”，删除 `.drawio` 前先确认导出成功
+- 文章图片使用干净的 `.png` 文件名；可编辑能力由单独保留的 `.drawio` 源文件提供
